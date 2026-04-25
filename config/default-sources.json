@@ -149,6 +149,13 @@
       "fetchMethod": "http"
     },
     {
+      "name": "AMD Developer Blog",
+      "type": "scrape",
+      "indexUrl": "https://community.amd.com/t5/ai/bg-p/ai-category",
+      "articleBaseUrl": "https://community.amd.com/t5/ai/",
+      "fetchMethod": "http"
+    },
+    {
       "name": "Simon Willison's Blog",
       "type": "scrape",
       "indexUrl": "https://simonwillison.net/",
@@ -188,6 +195,13 @@
       "type": "scrape",
       "indexUrl": "https://www.deeplearning.ai/the-batch/",
       "articleBaseUrl": "https://www.deeplearning.ai/the-batch/",
+      "fetchMethod": "http"
+    },
+    {
+      "name": "State of AI Report",
+      "type": "scrape",
+      "indexUrl": "https://www.stateof.ai/",
+      "articleBaseUrl": "https://www.stateof.ai/",
       "fetchMethod": "http"
     }
   ],
