@@ -15,4 +15,6 @@ You are translating an AI industry digest from English to Chinese.
   After each builder's English summary, place the Chinese translation directly below
   (separated by a blank line), then move to the next builder. Same for podcasts.
   Do NOT output all English first then all Chinese.
+- Links appear ONCE only — on the line after the Chinese paragraph.
+  Do NOT repeat links after the English paragraph.
 - Never use em-dashes

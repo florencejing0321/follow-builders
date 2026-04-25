@@ -2,58 +2,104 @@
 
 You are assembling the final digest from individual source summaries.
 
-## Format
+## Content order
 
-Start with this header (replace [Date] with today's date):
+1. X / TWITTER — each builder with new posts
+2. OFFICIAL BLOGS — each blog post from AI company blogs (OpenAI, Anthropic, etc.)
+3. PODCASTS — each podcast with new episodes
 
-AI Builders Digest — [Date]
+Only include sources that have new content. Skip any with nothing new.
 
-Then organize content in this order:
+---
 
-1. X / TWITTER section — list each builder with new posts
-2. OFFICIAL BLOGS section — list each blog post from AI company blogs (OpenAI, Anthropic, etc.)
-3. PODCASTS section — list each podcast with new episodes
+## Stable bilingual template
 
-## Rules
+Every section MUST follow this exact template — no variation:
 
-- Only include sources that have new content
-- Skip any source with nothing new
-- Under each source, paste the individual summary you generated
+```
+---
+
+## [Full Name] — [Role at Company]
+
+[English paragraph: 2–4 sentences. No URLs inside the paragraph.]
+
+[Chinese paragraph: direct translation. No URLs inside the paragraph.]
+
+[links line — see link format rules below]
+```
+
+### Link format rules
+
+- Links appear **once only** — on the line immediately after the Chinese paragraph.
+- Separate multiple links with ` · `
+- Link text (visible anchor) must be **short** — never the raw URL:
+  - `https://x.com/<user>/status/<id>` → visible text `x.com/<user>`
+  - `https://twitter.com/<user>/status/<id>` → visible text `x.com/<user>`
+  - `https://youtube.com/watch?v=<id>` or `https://youtu.be/<id>` → visible text `youtube.com ▶`
+  - anything else → visible text = hostname without `www.`
+- If a builder has two tweets, add ① ② to distinguish:
+  `x.com/levie ①` · `x.com/levie ②`
+- NEVER repeat the same link after the English paragraph. One link block per section, always after Chinese.
+
+### Example (tweet section)
+
+```
+---
+
+## Aaron Levie — Box CEO
+
+Box CEO Aaron Levie shared GPT-5.5 benchmark results from enterprise testing, finding a
+10-point accuracy jump vs. GPT-5.4 across financial services, healthcare, and public
+sector. He also argued that AI expands the scope of work rather than reducing it.
+
+Box CEO Aaron Levie 分享了 GPT-5.5 在企业知识工作上的实测结果，准确率较 GPT-5.4
+提升约 10 个百分点。他同时指出，AI 不会减少工作总量，而是拓展了任务边界。
+
+[x.com/levie ①](https://x.com/levie/status/...) · [x.com/levie ②](https://x.com/levie/status/...)
+```
+
+### Example (podcast section)
+
+```
+---
+
+## Podcast: Episode Title Here
+
+[English paragraph]
+
+[Chinese paragraph]
+
+[youtube.com ▶](https://youtube.com/watch?v=...)
+```
+
+---
+
+## Other rules
 
 ### Podcast links
-- After each podcast summary, include the specific video URL from the JSON `url` field
-  (e.g. https://youtube.com/watch?v=Iu4gEnZFQz8)
-- NEVER link to the channel page. Always link to the specific video.
-- Include the exact episode title from the JSON `title` field in the heading
+- Always link to the specific video URL from the JSON `url` field.
+- NEVER link to the channel page.
+- Include the exact episode title from the JSON `title` field in the heading.
 
 ### Tweet author formatting
-- Use the author's full name and role/company, not just their last name
-  (e.g. "Box CEO Aaron Levie" not "Levie")
-- NEVER write Twitter handles with @ in the digest. On Telegram, @handle becomes
-  a clickable link to a Telegram user, which is wrong. Instead write handles
-  without @ (e.g. "Aaron Levie (levie on X)" or just use their full name)
-- Include the direct link to each tweet from the JSON `url` field
+- Use the author's full name and role/company: "Box CEO Aaron Levie", not "Levie".
+- NEVER write Twitter handles with @ in the body text. On Telegram, @handle becomes
+  a clickable link to a Telegram user, which is wrong.
 
 ### Blog post formatting
-- Use the blog name as a section header (e.g. "Anthropic Engineering", "OpenAI News", "Claude Blog")
-- Under each blog, list each new post with its title and summary
-- Include the author name if available
-- Include the direct link to the original article
+- Use the blog name as a section header (e.g. "Anthropic Engineering", "OpenAI News").
+- Under each blog, list each post with its title, summary, and source link.
+- Include the author name if available.
 
 ### Mandatory links
-- Every single piece of content MUST have an original source link
-- Blog posts: the direct article URL (e.g. https://www.anthropic.com/engineering/...)
-- Podcasts: the YouTube video URL (e.g. https://youtube.com/watch?v=xxx)
-- Tweets: the direct tweet URL (e.g. https://x.com/levie/status/xxx)
-- If you don't have a link for something, do NOT include it in the digest.
-  No link = not real = do not include.
+- Every piece of content MUST have an original source link.
+- If you don't have a link for something, do NOT include it. No link = skip it.
 
 ### No fabrication
-- Only include content that came from the feed JSON (blogs, podcasts, and tweets)
-- NEVER make up quotes, opinions, or content you think someone might have said
-- NEVER speculate about someone's silence or what they might be working on
-- If you have nothing real for a builder, skip them entirely
+- Only include content from the feed JSON.
+- NEVER make up quotes, opinions, or content.
+- If you have nothing real for a builder, skip them entirely.
 
-### General
-- At the very end, add a line: "Generated through the Follow Builders skill: https://github.com/zarazhangrui/follow-builders"
-- Keep formatting clean and scannable — this will be read on a phone screen
+### Footer
+- At the very end, add: "Generated through the Follow Builders skill: https://github.com/zarazhangrui/follow-builders"
+- Keep formatting clean and scannable — this will be read on a phone screen.
