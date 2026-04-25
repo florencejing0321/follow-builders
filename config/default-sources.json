@@ -29,6 +29,21 @@
       "name": "AI & I by Every",
       "rssUrl": "https://anchor.fm/s/ed1f5584/podcast/rss",
       "url": "https://www.youtube.com/playlist?list=PLuMcoKK9mKgHtW_o9h5sGO2vXrffKHwJL"
+    },
+    {
+      "name": "Machine Learning Street Talk",
+      "rssUrl": "https://feeds.acast.com/public/shows/machinelearningstreet-talk",
+      "url": "https://www.youtube.com/@MLStreetTalk"
+    },
+    {
+      "name": "TWIML AI Podcast",
+      "rssUrl": "https://feeds.megaphone.fm/MLN2155636947",
+      "url": "https://www.youtube.com/@twimlai"
+    },
+    {
+      "name": "Andrej Karpathy",
+      "rssUrl": "https://www.youtube.com/feeds/videos.xml?channel_id=UCXUPKJO5MZQMU011NuFbKhA",
+      "url": "https://www.youtube.com/@AndrejKarpathy"
     }
   ],
   "blogs": [
@@ -44,6 +59,90 @@
       "type": "scrape",
       "indexUrl": "https://claude.com/blog",
       "articleBaseUrl": "https://claude.com/blog/",
+      "fetchMethod": "http"
+    },
+    {
+      "name": "OpenAI Research Blog",
+      "type": "scrape",
+      "indexUrl": "https://openai.com/news/research/",
+      "articleBaseUrl": "https://openai.com/research/",
+      "fetchMethod": "http"
+    },
+    {
+      "name": "OpenAI Engineering Blog",
+      "type": "scrape",
+      "indexUrl": "https://openai.com/news/engineering/",
+      "articleBaseUrl": "https://openai.com/blog/",
+      "fetchMethod": "http"
+    },
+    {
+      "name": "Google DeepMind Blog",
+      "type": "scrape",
+      "indexUrl": "https://deepmind.google/discover/blog/",
+      "articleBaseUrl": "https://deepmind.google/discover/blog/",
+      "fetchMethod": "http"
+    },
+    {
+      "name": "Google AI Blog",
+      "type": "scrape",
+      "indexUrl": "https://blog.google/technology/ai/",
+      "articleBaseUrl": "https://blog.google/technology/ai/",
+      "fetchMethod": "http"
+    },
+    {
+      "name": "Microsoft AI Blog",
+      "type": "scrape",
+      "indexUrl": "https://blogs.microsoft.com/ai/",
+      "articleBaseUrl": "https://blogs.microsoft.com/ai/",
+      "fetchMethod": "http"
+    },
+    {
+      "name": "NVIDIA Technical Blog",
+      "type": "scrape",
+      "indexUrl": "https://blogs.nvidia.com/",
+      "articleBaseUrl": "https://blogs.nvidia.com/blog/",
+      "fetchMethod": "http"
+    },
+    {
+      "name": "Simon Willison's Blog",
+      "type": "scrape",
+      "indexUrl": "https://simonwillison.net/",
+      "articleBaseUrl": "https://simonwillison.net/",
+      "fetchMethod": "http"
+    },
+    {
+      "name": "Import AI (Jack Clark)",
+      "type": "scrape",
+      "indexUrl": "https://jack-clark.net/",
+      "articleBaseUrl": "https://jack-clark.net/",
+      "fetchMethod": "http"
+    },
+    {
+      "name": "Fidji Simo Newsletter",
+      "type": "scrape",
+      "indexUrl": "https://fidjisimo.substack.com/",
+      "articleBaseUrl": "https://fidjisimo.substack.com/p/",
+      "fetchMethod": "http"
+    },
+    {
+      "name": "Interconnects (Nathan Lambert)",
+      "type": "scrape",
+      "indexUrl": "https://www.interconnects.ai/",
+      "articleBaseUrl": "https://www.interconnects.ai/p/",
+      "fetchMethod": "http"
+    },
+    {
+      "name": "Ahead of AI (Sebastian Raschka)",
+      "type": "scrape",
+      "indexUrl": "https://sebastianraschka.com/",
+      "articleBaseUrl": "https://sebastianraschka.com/",
+      "fetchMethod": "http"
+    },
+    {
+      "name": "The Batch (DeepLearning.AI)",
+      "type": "scrape",
+      "indexUrl": "https://www.deeplearning.ai/the-batch/",
+      "articleBaseUrl": "https://www.deeplearning.ai/the-batch/",
       "fetchMethod": "http"
     }
   ],
@@ -72,6 +171,52 @@
     { "name": "Dan Shipper", "handle": "danshipper" },
     { "name": "Aditya Agarwal", "handle": "adityaag" },
     { "name": "Sam Altman", "handle": "sama" },
-    { "name": "Claude", "handle": "claudeai" }
+    { "name": "Claude", "handle": "claudeai" },
+    { "name": "NVIDIA", "handle": "nvidia" },
+    { "name": "NVIDIA Newsroom", "handle": "nvidianewsroom" },
+    { "name": "AMD", "handle": "AMD" },
+    { "name": "Intel", "handle": "intel" },
+    { "name": "Lisa Su", "handle": "LisaSu" },
+    { "name": "Microsoft", "handle": "Microsoft" },
+    { "name": "AWS", "handle": "awscloud" },
+    { "name": "Google Cloud", "handle": "googlecloud" },
+    { "name": "Satya Nadella", "handle": "satyanadella" },
+    { "name": "Andy Jassy", "handle": "ajassy" },
+    { "name": "OpenAI", "handle": "OpenAI" },
+    { "name": "Anthropic", "handle": "AnthropicAI" },
+    { "name": "Google DeepMind", "handle": "GoogleDeepMind" },
+    { "name": "Meta AI", "handle": "MetaAI" },
+    { "name": "xAI", "handle": "xai" },
+    { "name": "Greg Brockman", "handle": "gdb" },
+    { "name": "Dario Amodei", "handle": "DarioAmodei" },
+    { "name": "Chris Olah", "handle": "ch402" },
+    { "name": "Demis Hassabis", "handle": "demishassabis" },
+    { "name": "Yann LeCun", "handle": "ylecun" },
+    { "name": "Ilya Sutskever", "handle": "ilyasut" },
+    { "name": "Elon Musk", "handle": "elonmusk" },
+    { "name": "Lilian Weng", "handle": "lilianweng" },
+    { "name": "Fidji Simo", "handle": "fidjissimo" },
+    { "name": "Hugging Face", "handle": "huggingface" },
+    { "name": "LangChain", "handle": "LangChainAI" },
+    { "name": "Clem Delangue", "handle": "ClementDelangue" },
+    { "name": "Harrison Chase", "handle": "hwchase17" },
+    { "name": "Simon Willison", "handle": "simonw" },
+    { "name": "a16z", "handle": "a16z" },
+    { "name": "Sequoia Capital", "handle": "sequoia" },
+    { "name": "Martin Casado", "handle": "martin_casado" },
+    { "name": "Sarah Guo", "handle": "saranormous" },
+    { "name": "Elad Gil", "handle": "eladgil" },
+    { "name": "Nat Friedman", "handle": "natfriedman" },
+    { "name": "David Cahn", "handle": "david_cahn_" },
+    { "name": "Nathan Benaich", "handle": "nathanbenaich" },
+    { "name": "Fei-Fei Li", "handle": "drfeifei" },
+    { "name": "François Chollet", "handle": "fchollet" },
+    { "name": "Yoshua Bengio", "handle": "yoshuabengio" },
+    { "name": "Percy Liang", "handle": "percyliang" },
+    { "name": "Nathan Lambert", "handle": "natolambert" },
+    { "name": "Shreya Shankar", "handle": "sh_reya" },
+    { "name": "Perplexity", "handle": "perplexity_ai" },
+    { "name": "Aravind Srinivas", "handle": "AravSrinivas" },
+    { "name": "Denis Yarats", "handle": "denisyarats" }
   ]
 }
