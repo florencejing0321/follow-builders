@@ -30,6 +30,7 @@ const PODCAST_LOOKBACK_HOURS = 336; // 14 days — podcasts publish weekly/biwee
 const BLOG_LOOKBACK_HOURS = 72;
 const MAX_TWEETS_PER_USER = 3;
 const MAX_ARTICLES_PER_BLOG = 3;
+const MAX_PODCASTS_PER_RUN = 3;
 
 // State file lives in the repo root so it gets committed by GitHub Actions
 const SCRIPT_DIR = decodeURIComponent(new URL(".", import.meta.url).pathname);
@@ -452,8 +453,11 @@ async function fetchPodcastContent(podcasts, apiKey, state, errors) {
     console.error(`    - "${v.title}" published=${v.publishedAt || "unknown"}`);
   }
 
-  // Step 3: Try each candidate until we get a transcript from pod2txt
+  // Step 3: Try each candidate, collect up to MAX_PODCASTS_PER_RUN transcripts
+  const collected = [];
   for (const selected of withinWindow) {
+    if (collected.length >= MAX_PODCASTS_PER_RUN) break;
+
     console.error(`    Fetching transcript for "${selected.title}"...`);
 
     const result = await fetchPod2txtTranscript(
@@ -501,21 +505,23 @@ async function fetchPodcastContent(podcasts, apiKey, state, errors) {
       );
     }
 
-    return [
-      {
-        source: "podcast",
-        name: selected.podcast.name,
-        title: selected.title,
-        guid: selected.guid,
-        url: youtubeUrl || selected.podcast.url,
-        publishedAt: selected.publishedAt,
-        transcript: result.transcript,
-      },
-    ];
+    collected.push({
+      source: "podcast",
+      name: selected.podcast.name,
+      title: selected.title,
+      guid: selected.guid,
+      url: youtubeUrl || selected.podcast.url,
+      publishedAt: selected.publishedAt,
+      transcript: result.transcript,
+    });
   }
 
-  console.error(`    No candidates had transcripts available`);
-  return [];
+  if (collected.length === 0) {
+    console.error(`    No candidates had transcripts available`);
+  } else {
+    console.error(`    Collected ${collected.length} podcast(s)`);
+  }
+  return collected;
 }
 
 // -- X/Twitter Fetching (Official API v2) ------------------------------------
