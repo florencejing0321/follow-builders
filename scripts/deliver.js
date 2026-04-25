@@ -142,6 +142,25 @@ function inlineMarkdownLinks(text) {
   );
 }
 
+function sourceLabel(url, fallbackIndex) {
+  const xMatch = url.match(/^https?:\/\/(?:www\.)?(?:x|twitter)\.com\/([^/?#]+)\/status\/\d+/i);
+  if (xMatch) return `@${xMatch[1]} on X`;
+
+  try {
+    const { hostname } = new URL(url);
+    const host = hostname.replace(/^www\./, "");
+    if (host.includes("youtube.com") || host.includes("youtu.be")) return "Watch/listen";
+    if (host.includes("openai.com")) return "OpenAI";
+    if (host.includes("anthropic.com")) return "Anthropic";
+    if (host.includes("deepmind.google")) return "Google DeepMind";
+    if (host.includes("blog.google")) return "Google Blog";
+    if (host.includes("nvidia.com")) return "NVIDIA";
+    return host;
+  } catch {
+    return `Source ${fallbackIndex}`;
+  }
+}
+
 function digestTextToHtml(text) {
   const normalized = text
     .replace(/\r\n/g, '\n')
@@ -165,12 +184,15 @@ function digestTextToHtml(text) {
 
     if (urls.length > 0 && prose.length === 0) {
       html.push(`<p class="sources">${urls.map((url) =>
-        `<a href="${escapeHtml(url)}">Source ${sourceCounter++}</a>`
+        `<a href="${escapeHtml(url)}">${escapeHtml(sourceLabel(url, sourceCounter++))}</a>`
       ).join(' · ')}</p>`);
       continue;
     }
 
-    if (prose.length === 1 && /^\*\*[^*]+\*\*$/.test(prose[0])) {
+    if (html.length === 0 && prose.length === 1) {
+      const title = prose[0].replace(/^\*\*|\*\*$/g, '');
+      html.push(`<h1>${escapeHtml(title)}</h1>`);
+    } else if (prose.length === 1 && /^\*\*[^*]+\*\*$/.test(prose[0])) {
       const label = prose[0].replace(/^\*\*|\*\*$/g, '');
       const isSection = ['X / TWITTER', 'OFFICIAL BLOGS', 'PODCASTS'].includes(label);
       html.push(`<h2 class="${isSection ? 'section-title' : 'item-title'}">${escapeHtml(label)}</h2>`);
@@ -182,7 +204,7 @@ function digestTextToHtml(text) {
 
     if (urls.length > 0) {
       html.push(`<p class="sources">${urls.map((url) =>
-        `<a href="${escapeHtml(url)}">Source ${sourceCounter++}</a>`
+        `<a href="${escapeHtml(url)}">${escapeHtml(sourceLabel(url, sourceCounter++))}</a>`
       ).join(' · ')}</p>`);
     }
   }
@@ -192,15 +214,24 @@ function digestTextToHtml(text) {
 <head>
   <meta charset="utf-8">
   <style>
-    body { margin: 0; padding: 24px; background: #f6f7f9; color: #1f2328; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; line-height: 1.55; }
-    .container { max-width: 760px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; }
-    h2 { margin: 18px 0 8px; font-size: 16px; line-height: 1.3; color: #111827; }
-    .section-title { text-align: center; font-size: 17px; letter-spacing: 0.02em; }
+    body { margin: 0; padding: 0; background: #242424; color: #e8e8e8; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; line-height: 1.45; }
+    .container { max-width: 1080px; margin: 0 auto; padding: 18px 30px 28px; }
+    h1 { margin: 0 0 38px; font-size: 24px; line-height: 1.25; font-weight: 500; color: #eeeeee; }
+    h2 { margin: 24px 0 18px; font-size: 32px; line-height: 1.25; color: #eeeeee; font-weight: 800; }
+    .section-title { text-align: center; font-size: 34px; letter-spacing: 0; text-transform: uppercase; }
     .item-title { text-align: left; }
-    p { margin: 0 0 14px; font-size: 14px; }
-    a { color: #0b57d0; text-decoration: none; }
-    .sources { margin-top: -4px; color: #5f6b7a; font-size: 13px; }
-    hr { border: 0; border-top: 1px solid #e5e7eb; margin: 18px 0; }
+    p { margin: 0 0 22px; font-size: 24px; color: #e6e6e6; }
+    a { color: #7da2ff; text-decoration: none; }
+    .sources { margin-top: 2px; margin-bottom: 36px; color: #7da2ff; font-size: 22px; }
+    hr { border: 0; border-top: 1px solid #9a9a9a; margin: 28px 0; }
+    @media (max-width: 640px) {
+      .container { padding: 16px 18px 24px; }
+      h1 { font-size: 20px; margin-bottom: 28px; }
+      h2 { font-size: 25px; }
+      .section-title { font-size: 28px; }
+      p { font-size: 18px; }
+      .sources { font-size: 17px; }
+    }
   </style>
 </head>
 <body>
