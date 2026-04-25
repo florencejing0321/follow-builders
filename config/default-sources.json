@@ -57,22 +57,22 @@
     },
     {
       "name": "Lightcone Podcast",
-      "rssUrl": "https://feeds.simplecast.com/Oe35UfwH",
+      "rssUrl": "https://anchor.fm/s/f58d3330/podcast/rss",
       "url": "https://www.youtube.com/@ycombinator"
     },
     {
       "name": "The Logan Bartlett Show",
-      "rssUrl": "https://feeds.transistor.fm/the-logan-bartlett-show",
+      "rssUrl": "TODO: paste actual RSS from podnews.net/podcast/ia1lq",
       "url": "https://www.youtube.com/@theloganbartlettshow"
     },
     {
       "name": "Google DeepMind the Podcast",
-      "rssUrl": "https://feeds.transistor.fm/the-deepmind-podcast",
+      "rssUrl": "https://feeds.simplecast.com/JT6pbPkg",
       "url": "https://www.youtube.com/playlist?list=PLqYmG7hTraZCkftCvihsG2eCTH2OyGScc"
     },
     {
       "name": "AI + a16z",
-      "rssUrl": "https://feeds.megaphone.fm/a16z",
+      "rssUrl": "https://feeds.simplecast.com/Hb_IuXOo",
       "url": "https://www.youtube.com/@a16z"
     },
     {
@@ -82,7 +82,7 @@
     },
     {
       "name": "Minus One",
-      "rssUrl": "https://feeds.transistor.fm/minus-one",
+      "rssUrl": "https://anchor.fm/s/f91eac68/podcast/rss",
       "url": "https://www.youtube.com/@southparkcommons"
     },
     {
