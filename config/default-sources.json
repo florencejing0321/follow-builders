@@ -61,11 +61,6 @@
       "url": "https://www.youtube.com/@ycombinator"
     },
     {
-      "name": "The Logan Bartlett Show",
-      "rssUrl": "TODO: paste actual RSS from podnews.net/podcast/ia1lq",
-      "url": "https://www.youtube.com/@theloganbartlettshow"
-    },
-    {
       "name": "Google DeepMind the Podcast",
       "rssUrl": "https://feeds.simplecast.com/JT6pbPkg",
       "url": "https://www.youtube.com/playlist?list=PLqYmG7hTraZCkftCvihsG2eCTH2OyGScc"
@@ -107,101 +102,76 @@
       "fetchMethod": "http"
     },
     {
-      "name": "OpenAI Research Blog",
-      "type": "scrape",
-      "indexUrl": "https://openai.com/news/research/",
-      "articleBaseUrl": "https://openai.com/research/",
-      "fetchMethod": "http"
-    },
-    {
-      "name": "OpenAI Engineering Blog",
-      "type": "scrape",
-      "indexUrl": "https://openai.com/news/engineering/",
-      "articleBaseUrl": "https://openai.com/blog/",
-      "fetchMethod": "http"
+      "name": "OpenAI News",
+      "type": "rss",
+      "rssUrl": "https://openai.com/news/rss.xml",
+      "url": "https://openai.com/news/"
     },
     {
       "name": "Google DeepMind Blog",
-      "type": "scrape",
-      "indexUrl": "https://deepmind.google/discover/blog/",
-      "articleBaseUrl": "https://deepmind.google/discover/blog/",
-      "fetchMethod": "http"
+      "type": "rss",
+      "rssUrl": "https://deepmind.google/blog/rss.xml",
+      "url": "https://deepmind.google/discover/blog/"
     },
     {
       "name": "Google AI Blog",
-      "type": "scrape",
-      "indexUrl": "https://blog.google/technology/ai/",
-      "articleBaseUrl": "https://blog.google/technology/ai/",
-      "fetchMethod": "http"
+      "type": "rss",
+      "rssUrl": "https://blog.google/rss/",
+      "url": "https://blog.google/technology/ai/"
     },
     {
       "name": "Microsoft AI Blog",
-      "type": "scrape",
-      "indexUrl": "https://blogs.microsoft.com/ai/",
-      "articleBaseUrl": "https://blogs.microsoft.com/ai/",
-      "fetchMethod": "http"
+      "type": "rss",
+      "rssUrl": "https://blogs.microsoft.com/ai/feed/",
+      "url": "https://blogs.microsoft.com/ai/"
     },
     {
       "name": "NVIDIA Technical Blog",
-      "type": "scrape",
-      "indexUrl": "https://blogs.nvidia.com/",
-      "articleBaseUrl": "https://blogs.nvidia.com/blog/",
-      "fetchMethod": "http"
+      "type": "rss",
+      "rssUrl": "https://blogs.nvidia.com/feed/",
+      "url": "https://blogs.nvidia.com/"
     },
     {
       "name": "AMD Developer Blog",
-      "type": "scrape",
-      "indexUrl": "https://community.amd.com/t5/ai/bg-p/ai-category",
-      "articleBaseUrl": "https://community.amd.com/t5/ai/",
-      "fetchMethod": "http"
+      "type": "rss",
+      "rssUrl": "https://community.amd.com/t5/s/gxcuf89792/rss/board?board.id=ai-category",
+      "url": "https://community.amd.com/t5/ai/bg-p/ai-category"
     },
     {
       "name": "Simon Willison's Blog",
-      "type": "scrape",
-      "indexUrl": "https://simonwillison.net/",
-      "articleBaseUrl": "https://simonwillison.net/",
-      "fetchMethod": "http"
+      "type": "rss",
+      "rssUrl": "https://simonwillison.net/atom/everything/",
+      "url": "https://simonwillison.net/"
     },
     {
       "name": "Import AI (Jack Clark)",
-      "type": "scrape",
-      "indexUrl": "https://jack-clark.net/",
-      "articleBaseUrl": "https://jack-clark.net/",
-      "fetchMethod": "http"
+      "type": "rss",
+      "rssUrl": "https://jack-clark.net/feed/",
+      "url": "https://jack-clark.net/"
     },
     {
       "name": "Fidji Simo Newsletter",
-      "type": "scrape",
-      "indexUrl": "https://fidjisimo.substack.com/",
-      "articleBaseUrl": "https://fidjisimo.substack.com/p/",
-      "fetchMethod": "http"
+      "type": "rss",
+      "rssUrl": "https://fidjisimo.substack.com/feed",
+      "url": "https://fidjisimo.substack.com/"
     },
     {
       "name": "Interconnects (Nathan Lambert)",
-      "type": "scrape",
-      "indexUrl": "https://www.interconnects.ai/",
-      "articleBaseUrl": "https://www.interconnects.ai/p/",
-      "fetchMethod": "http"
+      "type": "rss",
+      "rssUrl": "https://www.interconnects.ai/feed",
+      "url": "https://www.interconnects.ai/"
     },
     {
       "name": "Ahead of AI (Sebastian Raschka)",
-      "type": "scrape",
-      "indexUrl": "https://sebastianraschka.com/",
-      "articleBaseUrl": "https://sebastianraschka.com/",
-      "fetchMethod": "http"
+      "type": "rss",
+      "rssUrl": "https://sebastianraschka.com/rss_feed.xml",
+      "url": "https://sebastianraschka.com/"
     },
     {
       "name": "The Batch (DeepLearning.AI)",
       "type": "scrape",
       "indexUrl": "https://www.deeplearning.ai/the-batch/",
       "articleBaseUrl": "https://www.deeplearning.ai/the-batch/",
-      "fetchMethod": "http"
-    },
-    {
-      "name": "State of AI Report",
-      "type": "scrape",
-      "indexUrl": "https://www.stateof.ai/",
-      "articleBaseUrl": "https://www.stateof.ai/",
       "fetchMethod": "http"
     }
   ],

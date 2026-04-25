@@ -15,7 +15,8 @@
 
 import { readFile, writeFile } from "fs/promises";
 import { existsSync } from "fs";
-import { join } from "path";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
 
 // -- Constants ---------------------------------------------------------------
 
@@ -33,7 +34,7 @@ const MAX_ARTICLES_PER_BLOG = 3;
 const MAX_PODCASTS_PER_RUN = 3;
 
 // State file lives in the repo root so it gets committed by GitHub Actions
-const SCRIPT_DIR = decodeURIComponent(new URL(".", import.meta.url).pathname);
+const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const STATE_PATH = join(SCRIPT_DIR, "..", "state-feed.json");
 
 // -- State Management --------------------------------------------------------
@@ -718,6 +719,41 @@ function parseClaudeBlogIndex(html) {
   return articles;
 }
 
+function parseGenericBlogIndex(html, blog) {
+  const articles = [];
+  const seenUrls = new Set();
+  const indexUrl = new URL(blog.indexUrl);
+  const basePath = indexUrl.pathname.replace(/\/$/, "");
+  const linkRegex = /href=["']([^"']+)["']/gi;
+  let linkMatch;
+
+  while ((linkMatch = linkRegex.exec(html)) !== null) {
+    let url;
+    try {
+      url = new URL(decodeXmlEntities(linkMatch[1]), blog.indexUrl);
+    } catch {
+      continue;
+    }
+
+    if (url.origin !== indexUrl.origin) continue;
+    if (!url.pathname.startsWith(`${basePath}/`)) continue;
+    if (url.pathname === indexUrl.pathname) continue;
+
+    const normalized = url.toString().replace(/#.*$/, "");
+    if (seenUrls.has(normalized)) continue;
+    seenUrls.add(normalized);
+
+    articles.push({
+      title: "",
+      url: normalized,
+      publishedAt: null,
+      description: "",
+    });
+  }
+
+  return articles;
+}
+
 // Extracts the main text content from an Anthropic Engineering article page.
 // Tries the embedded JSON first (Next.js SSR data), then falls back to
 // stripping HTML tags from the article body.
@@ -862,6 +898,115 @@ function extractClaudeBlogArticleContent(html) {
   return { title, author, publishedAt, content };
 }
 
+function decodeXmlEntities(text = "") {
+  return text
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&#x27;/g, "'")
+    .replace(/&nbsp;/g, " ")
+    .trim();
+}
+
+function stripHtml(html = "") {
+  return decodeXmlEntities(html)
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<nav[\s\S]*?<\/nav>/gi, "")
+    .replace(/<footer[\s\S]*?<\/footer>/gi, "")
+    .replace(/<header[\s\S]*?<\/header>/gi, "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function readXmlTag(block, tagName) {
+  const escaped = tagName.replace(":", "\\:");
+  const match = block.match(
+    new RegExp(`<${escaped}[^>]*>([\\s\\S]*?)<\\/${escaped}>`, "i"),
+  );
+  return match ? decodeXmlEntities(match[1]) : "";
+}
+
+function readAtomLink(block) {
+  const alternate =
+    block.match(/<link[^>]*rel=["']alternate["'][^>]*href=["']([^"']+)["'][^>]*\/?>/i) ||
+    block.match(/<link[^>]*href=["']([^"']+)["'][^>]*rel=["']alternate["'][^>]*\/?>/i);
+  if (alternate) return decodeXmlEntities(alternate[1]);
+
+  const anyLink = block.match(/<link[^>]*href=["']([^"']+)["'][^>]*\/?>/i);
+  return anyLink ? decodeXmlEntities(anyLink[1]) : "";
+}
+
+function parseFeedDate(value) {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+function parseBlogRssFeed(xml) {
+  const articles = [];
+
+  const itemRegex = /<item\b[^>]*>([\s\S]*?)<\/item>/gi;
+  let itemMatch;
+  while ((itemMatch = itemRegex.exec(xml)) !== null) {
+    const block = itemMatch[1];
+    const url = readXmlTag(block, "link") || readXmlTag(block, "guid");
+    if (!url) continue;
+    articles.push({
+      title: readXmlTag(block, "title") || "Untitled",
+      url,
+      publishedAt: parseFeedDate(
+        readXmlTag(block, "pubDate") || readXmlTag(block, "dc:date"),
+      ),
+      author: readXmlTag(block, "dc:creator") || readXmlTag(block, "author"),
+      description: stripHtml(readXmlTag(block, "description")),
+      content: stripHtml(
+        readXmlTag(block, "content:encoded") || readXmlTag(block, "description"),
+      ),
+    });
+  }
+
+  const entryRegex = /<entry\b[^>]*>([\s\S]*?)<\/entry>/gi;
+  let entryMatch;
+  while ((entryMatch = entryRegex.exec(xml)) !== null) {
+    const block = entryMatch[1];
+    const url = readAtomLink(block) || readXmlTag(block, "id");
+    if (!url) continue;
+    articles.push({
+      title: readXmlTag(block, "title") || "Untitled",
+      url,
+      publishedAt: parseFeedDate(
+        readXmlTag(block, "published") || readXmlTag(block, "updated"),
+      ),
+      author: readXmlTag(block, "name") || readXmlTag(block, "author"),
+      description: stripHtml(readXmlTag(block, "summary")),
+      content: stripHtml(readXmlTag(block, "content") || readXmlTag(block, "summary")),
+    });
+  }
+
+  return articles;
+}
+
+function extractGenericArticleContent(html) {
+  const titleMatch =
+    html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["'][^>]*>/i) ||
+    html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i) ||
+    html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+  const articleMatch =
+    html.match(/<article[^>]*>([\s\S]*?)<\/article>/i) ||
+    html.match(/<main[^>]*>([\s\S]*?)<\/main>/i);
+  return {
+    title: titleMatch ? stripHtml(titleMatch[1]) : "",
+    author: "",
+    publishedAt: null,
+    content: stripHtml(articleMatch ? articleMatch[1] : html),
+  };
+}
+
 // Main blog fetching orchestrator.
 // For each blog source in the config, discovers new articles, deduplicates
 // against previously seen URLs, fetches full article content, and returns
@@ -875,23 +1020,48 @@ async function fetchBlogContent(blogs, state, errors) {
     let candidates = [];
 
     try {
-      // Step 1: Discover articles from the blog index page
-      const indexRes = await fetch(blog.indexUrl, {
-        headers: { "User-Agent": "FollowBuilders/1.0 (feed aggregator)" },
-      });
-      if (!indexRes.ok) {
-        errors.push(
-          `Blog: Failed to fetch index for ${blog.name}: HTTP ${indexRes.status}`,
-        );
-        continue;
-      }
-      const indexHtml = await indexRes.text();
+      // Step 1: Discover articles from RSS/Atom feeds or known scrape targets.
+      if (blog.type === "rss" || blog.rssUrl) {
+        if (!blog.rssUrl) {
+          errors.push(`Blog: No rssUrl configured for ${blog.name}`);
+          continue;
+        }
 
-      // Use the right parser based on which blog this is
-      if (blog.indexUrl.includes("anthropic.com")) {
-        candidates = parseAnthropicEngineeringIndex(indexHtml);
-      } else if (blog.indexUrl.includes("claude.com")) {
-        candidates = parseClaudeBlogIndex(indexHtml);
+        const feedRes = await fetch(blog.rssUrl, {
+          headers: {
+            "User-Agent": RSS_USER_AGENT,
+            Accept: "application/rss+xml, application/atom+xml, application/xml, text/xml, */*",
+            "Accept-Language": "en-US,en;q=0.9",
+          },
+          signal: AbortSignal.timeout(30000),
+        });
+        if (!feedRes.ok) {
+          errors.push(
+            `Blog: Failed to fetch RSS for ${blog.name}: HTTP ${feedRes.status}`,
+          );
+          continue;
+        }
+
+        candidates = parseBlogRssFeed(await feedRes.text());
+      } else {
+        const indexRes = await fetch(blog.indexUrl, {
+          headers: { "User-Agent": "FollowBuilders/1.0 (feed aggregator)" },
+        });
+        if (!indexRes.ok) {
+          errors.push(
+            `Blog: Failed to fetch index for ${blog.name}: HTTP ${indexRes.status}`,
+          );
+          continue;
+        }
+        const indexHtml = await indexRes.text();
+
+        if (blog.indexUrl.includes("anthropic.com")) {
+          candidates = parseAnthropicEngineeringIndex(indexHtml);
+        } else if (blog.indexUrl.includes("claude.com")) {
+          candidates = parseClaudeBlogIndex(indexHtml);
+        } else {
+          candidates = parseGenericBlogIndex(indexHtml, blog);
+        }
       }
 
       // Step 2: Filter to unseen articles, cap at MAX_ARTICLES_PER_BLOG.
@@ -900,7 +1070,7 @@ async function fetchBlogContent(blogs, state, errors) {
       // backlog on first run. Articles with a known date must fall within
       // the lookback window; articles without dates are accepted if they
       // appear near the top of the listing (likely recent).
-      const MAX_INDEX_SCAN = MAX_ARTICLES_PER_BLOG; // only look at the N most recent entries
+      const MAX_INDEX_SCAN = blog.rssUrl ? 10 : MAX_ARTICLES_PER_BLOG;
       const newArticles = [];
       for (const article of candidates.slice(0, MAX_INDEX_SCAN)) {
         if (state.seenArticles[article.url]) continue; // already seen
@@ -923,24 +1093,35 @@ async function fetchBlogContent(blogs, state, errors) {
       // Step 3: Fetch full article content for each new article
       for (const article of newArticles) {
         try {
-          // Fetch the full article page
-          const articleRes = await fetch(article.url, {
-            headers: { "User-Agent": "FollowBuilders/1.0 (feed aggregator)" },
-          });
-          if (!articleRes.ok) {
-            errors.push(
-              `Blog: Failed to fetch article ${article.url}: HTTP ${articleRes.status}`,
-            );
-            continue;
-          }
-          const articleHtml = await articleRes.text();
+          let extracted = article.content
+            ? {
+                title: article.title,
+                author: article.author || "",
+                publishedAt: article.publishedAt || null,
+                content: article.content,
+              }
+            : null;
 
-          // Use the right content extractor based on the blog
-          let extracted;
-          if (article.url.includes("anthropic.com/engineering")) {
-            extracted = extractAnthropicArticleContent(articleHtml);
-          } else if (article.url.includes("claude.com/blog")) {
-            extracted = extractClaudeBlogArticleContent(articleHtml);
+          if (!extracted?.content || extracted.content.length < 500) {
+            const articleRes = await fetch(article.url, {
+              headers: { "User-Agent": RSS_USER_AGENT },
+              signal: AbortSignal.timeout(30000),
+            });
+            if (!articleRes.ok) {
+              errors.push(
+                `Blog: Failed to fetch article ${article.url}: HTTP ${articleRes.status}`,
+              );
+              continue;
+            }
+            const articleHtml = await articleRes.text();
+
+            if (article.url.includes("anthropic.com/engineering")) {
+              extracted = extractAnthropicArticleContent(articleHtml);
+            } else if (article.url.includes("claude.com/blog")) {
+              extracted = extractClaudeBlogArticleContent(articleHtml);
+            } else {
+              extracted = extractGenericArticleContent(articleHtml);
+            }
           }
 
           if (!extracted || !extracted.content) {
