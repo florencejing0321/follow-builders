@@ -370,8 +370,10 @@ Assemble the digest following `prompts.digest_intro`.
 Read `config.language` from the JSON:
 - **"en":** Entire digest in English.
 - **"zh":** Entire digest in Chinese. Follow `prompts.translate`.
-- **"bilingual":** Follow `prompts.digest_intro` and `prompts.translate` exactly —
-  they specify the full bilingual template including link placement and formatting.
+- **"bilingual":** Interleave English and Chinese paragraph by paragraph — English
+  paragraph, then Chinese translation directly below, then the next builder.
+  Do NOT output all English first then all Chinese. Follow `prompts.digest_intro`
+  and `prompts.translate` for the full template including link placement.
 
 **Follow this setting exactly. Do NOT mix languages.**
 
