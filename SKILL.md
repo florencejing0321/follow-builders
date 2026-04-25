@@ -353,7 +353,7 @@ Read the prompts from the `prompts` field in the JSON:
 2. Summarize their `tweets` using `prompts.summarize_tweets`
 3. Every tweet MUST include its `url` from the JSON
 
-**Podcast (process second):** The `podcasts` array has at most 1 episode. If present:
+**Podcast (process second):** The `podcasts` array has up to 3 episodes. For each one:
 1. Summarize its `transcript` using `prompts.summarize_podcast`
 2. Use `name`, `title`, and `url` from the JSON object — NOT from the transcript
 
@@ -370,26 +370,10 @@ Assemble the digest following `prompts.digest_intro`.
 Read `config.language` from the JSON:
 - **"en":** Entire digest in English.
 - **"zh":** Entire digest in Chinese. Follow `prompts.translate`.
-- **"bilingual":** Interleave English and Chinese **paragraph by paragraph**.
-  For each builder's tweet summary: English version, then Chinese translation
-  directly below, then the next builder. For the podcast: English summary,
-  then Chinese translation directly below. Like this:
-
-  ```
-  Box CEO Aaron Levie argues that AI agents will reshape software procurement...
-  https://x.com/levie/status/123
-
-  Box CEO Aaron Levie 认为 AI agent 将从根本上重塑软件采购...
-  https://x.com/levie/status/123
-
-  Replit CEO Amjad Masad launched Agent 4...
-  https://x.com/amasad/status/456
-
-  Replit CEO Amjad Masad 发布了 Agent 4...
-  https://x.com/amasad/status/456
-  ```
-
-  Do NOT output all English first then all Chinese. Interleave them.
+- **"bilingual":** Interleave English and Chinese paragraph by paragraph — English
+  paragraph, then Chinese translation directly below, then the next builder.
+  Do NOT output all English first then all Chinese. Follow `prompts.digest_intro`
+  and `prompts.translate` for the full template including link placement.
 
 **Follow this setting exactly. Do NOT mix languages.**
 
