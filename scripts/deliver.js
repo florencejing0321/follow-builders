@@ -124,6 +124,93 @@ async function sendTelegram(text, botToken, chatId) {
 
 // -- Email Delivery (Resend) -------------------------------------------------
 
+function escapeHtml(text) {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function inlineMarkdownLinks(text) {
+  return escapeHtml(text).replace(
+    /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,
+    '<a href="$2">$1</a>'
+  ).replace(
+    /\*\*([^*]+)\*\*/g,
+    '<strong>$1</strong>'
+  );
+}
+
+function digestTextToHtml(text) {
+  const normalized = text
+    .replace(/\r\n/g, '\n')
+    .replace(/\n-{8,}\n/g, '\n\n--------\n\n');
+  const blocks = normalized.trim().split(/\n{2,}/);
+  const html = [];
+  let sourceCounter = 1;
+
+  for (const block of blocks) {
+    const lines = block.split(/\n/).map(line => line.trim()).filter(Boolean);
+    if (lines.length === 0) continue;
+
+    if (lines.length === 1 && lines[0] === '--------') {
+      html.push('<hr>');
+      sourceCounter = 1;
+      continue;
+    }
+
+    const urls = lines.filter(line => /^https?:\/\/\S+$/.test(line));
+    const prose = lines.filter(line => !/^https?:\/\/\S+$/.test(line));
+
+    if (urls.length > 0 && prose.length === 0) {
+      html.push(`<p class="sources">${urls.map((url) =>
+        `<a href="${escapeHtml(url)}">Source ${sourceCounter++}</a>`
+      ).join(' · ')}</p>`);
+      continue;
+    }
+
+    if (prose.length === 1 && /^\*\*[^*]+\*\*$/.test(prose[0])) {
+      const label = prose[0].replace(/^\*\*|\*\*$/g, '');
+      const isSection = ['X / TWITTER', 'OFFICIAL BLOGS', 'PODCASTS'].includes(label);
+      html.push(`<h2 class="${isSection ? 'section-title' : 'item-title'}">${escapeHtml(label)}</h2>`);
+    } else if (prose.length === 1 && prose[0].length < 80 && !/[.!?。！？]$/.test(prose[0])) {
+      html.push(`<h2 class="item-title">${inlineMarkdownLinks(prose[0])}</h2>`);
+    } else if (prose.length > 0) {
+      html.push(`<p>${inlineMarkdownLinks(prose.join('\n')).replace(/\n/g, '<br>')}</p>`);
+    }
+
+    if (urls.length > 0) {
+      html.push(`<p class="sources">${urls.map((url) =>
+        `<a href="${escapeHtml(url)}">Source ${sourceCounter++}</a>`
+      ).join(' · ')}</p>`);
+    }
+  }
+
+  return `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { margin: 0; padding: 24px; background: #f6f7f9; color: #1f2328; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; line-height: 1.55; }
+    .container { max-width: 760px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; }
+    h2 { margin: 18px 0 8px; font-size: 16px; line-height: 1.3; color: #111827; }
+    .section-title { text-align: center; font-size: 17px; letter-spacing: 0.02em; }
+    .item-title { text-align: left; }
+    p { margin: 0 0 14px; font-size: 14px; }
+    a { color: #0b57d0; text-decoration: none; }
+    .sources { margin-top: -4px; color: #5f6b7a; font-size: 13px; }
+    hr { border: 0; border-top: 1px solid #e5e7eb; margin: 18px 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    ${html.join('\n')}
+  </div>
+</body>
+</html>`;
+}
+
 // Sends the digest via Resend's email API.
 // The user provides their own Resend API key and email address.
 async function sendEmail(text, apiKey, toEmail) {
@@ -139,7 +226,8 @@ async function sendEmail(text, apiKey, toEmail) {
       subject: `AI Builders Digest — ${new Date().toLocaleDateString('en-US', {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
       })}`,
-      text: text
+      text: text,
+      html: digestTextToHtml(text)
     })
   });
 
