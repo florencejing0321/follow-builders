@@ -27,8 +27,8 @@ const X_API_BASE = "https://api.x.com/2";
 const RSS_USER_AGENT =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
 const TWEET_LOOKBACK_HOURS = 24;
-const PODCAST_LOOKBACK_HOURS = 336; // 14 days — podcasts publish weekly/biweekly, not daily
-const BLOG_LOOKBACK_HOURS = 72;
+const PODCAST_LOOKBACK_HOURS = 24;
+const BLOG_LOOKBACK_HOURS = 24;
 const MAX_TWEETS_PER_USER = 3;
 const MAX_ARTICLES_PER_BLOG = 3;
 const MAX_PODCASTS_PER_RUN = 3;
@@ -738,6 +738,7 @@ function parseGenericBlogIndex(html, blog) {
     if (url.origin !== indexUrl.origin) continue;
     if (!url.pathname.startsWith(`${basePath}/`)) continue;
     if (url.pathname === indexUrl.pathname) continue;
+    if (/\/(?:tag|category|author)\//i.test(url.pathname)) continue;
 
     const normalized = url.toString().replace(/#.*$/, "");
     if (seenUrls.has(normalized)) continue;
@@ -1074,9 +1075,8 @@ async function fetchBlogContent(blogs, state, errors) {
       const newArticles = [];
       for (const article of candidates.slice(0, MAX_INDEX_SCAN)) {
         if (state.seenArticles[article.url]) continue; // already seen
-        // If we have a date, check it's within the lookback window
-        if (article.publishedAt && new Date(article.publishedAt) < cutoff)
-          continue;
+        if (!article.publishedAt) continue;
+        if (new Date(article.publishedAt) < cutoff) continue;
         newArticles.push(article);
         if (newArticles.length >= MAX_ARTICLES_PER_BLOG) break;
       }

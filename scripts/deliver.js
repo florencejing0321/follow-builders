@@ -216,21 +216,21 @@ function digestTextToHtml(text) {
   <style>
     body { margin: 0; padding: 0; background: #242424; color: #e8e8e8; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; line-height: 1.45; }
     .container { max-width: 1080px; margin: 0 auto; padding: 18px 30px 28px; }
-    h1 { margin: 0 0 38px; font-size: 24px; line-height: 1.25; font-weight: 500; color: #eeeeee; }
-    h2 { margin: 24px 0 18px; font-size: 32px; line-height: 1.25; color: #eeeeee; font-weight: 800; }
-    .section-title { text-align: center; font-size: 34px; letter-spacing: 0; text-transform: uppercase; }
+    h1 { margin: 0 0 36px; font-size: 22px; line-height: 1.25; font-weight: 500; color: #eeeeee; }
+    h2 { margin: 24px 0 16px; font-size: 28px; line-height: 1.25; color: #eeeeee; font-weight: 800; }
+    .section-title { text-align: center; font-size: 30px; letter-spacing: 0; text-transform: uppercase; }
     .item-title { text-align: left; }
-    p { margin: 0 0 22px; font-size: 24px; color: #e6e6e6; }
+    p { margin: 0 0 20px; font-size: 20px; color: #e6e6e6; }
     a { color: #7da2ff; text-decoration: none; }
-    .sources { margin-top: 2px; margin-bottom: 36px; color: #7da2ff; font-size: 22px; }
+    .sources { margin-top: 2px; margin-bottom: 34px; color: #7da2ff; font-size: 18px; }
     hr { border: 0; border-top: 1px solid #9a9a9a; margin: 28px 0; }
     @media (max-width: 640px) {
       .container { padding: 16px 18px 24px; }
-      h1 { font-size: 20px; margin-bottom: 28px; }
-      h2 { font-size: 25px; }
-      .section-title { font-size: 28px; }
-      p { font-size: 18px; }
-      .sources { font-size: 17px; }
+      h1 { font-size: 19px; margin-bottom: 28px; }
+      h2 { font-size: 23px; }
+      .section-title { font-size: 25px; }
+      p { font-size: 17px; }
+      .sources { font-size: 16px; }
     }
   </style>
 </head>
