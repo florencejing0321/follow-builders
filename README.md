@@ -108,20 +108,6 @@ cd ~/.claude/skills/follow-builders/scripts && npm install
 That's it. No API keys needed. All content (blog articles + YouTube transcripts + X/Twitter posts)
 is fetched centrally and updated daily.
 
-## GitHub Actions Automation
-
-This fork includes a GitHub Actions workflow at `.github/workflows/send-digest.yml`
-that can generate and send the digest even when your computer is off.
-
-Required GitHub repository secrets:
-- `OPENAI_API_KEY` - used to compose the final digest text
-- `RESEND_API_KEY` - used to send the email
-- `X_BEARER_TOKEN` - used to refresh the X/Twitter feed
-- `POD2TXT_API_KEY` - used to refresh podcast transcripts
-
-The workflow is scheduled for `06:30` in `Asia/Singapore` and sends the email to
-`jingran2@lenovo.com` with subject `AI Builders Digest — YYYY-MM-DD`.
-
 ## How It Works
 
 1. A central feed is updated daily with the latest content from all sources

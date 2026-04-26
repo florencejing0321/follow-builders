@@ -1,5 +1,4 @@
 scripts/node_modules/
-tmp/
 .env
 *.log
 .DS_Store

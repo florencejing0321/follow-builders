@@ -8,12 +8,7 @@ You are assembling the final digest from individual source summaries.
 2. OFFICIAL BLOGS — each blog post from AI company blogs (OpenAI, Anthropic, etc.)
 3. PODCASTS — each podcast with new episodes
 
-Only include sources that have new content. If an entire major section has nothing new,
-do not leave it blank. Insert a short fallback note instead:
-
-- `X / TWITTER`: `No qualifying X posts in the past 24 hours.`
-- `OFFICIAL BLOGS`: `No qualifying official blog posts in the past 24 hours.`
-- `PODCASTS`: `No qualifying podcast episodes in the past 24 hours.`
+Only include sources that have new content. Skip any with nothing new.
 
 ---
 
@@ -95,12 +90,6 @@ Box CEO Aaron Levie 分享了 GPT-5.5 在企业知识工作上的实测结果，
 - Use the blog name as a section header (e.g. "Anthropic Engineering", "OpenAI News").
 - Under each blog, list each post with its title, summary, and source link.
 - Include the author name if available.
-- If there are no qualifying blog posts, output only the fallback note for the
-  `OFFICIAL BLOGS` section and do not leave the section empty.
-
-### Empty section handling
-- If `X / TWITTER`, `OFFICIAL BLOGS`, or `PODCASTS` has no qualifying items,
-  output the fallback sentence for that section instead of skipping the section body.
 
 ### Mandatory links
 - Every piece of content MUST have an original source link.
