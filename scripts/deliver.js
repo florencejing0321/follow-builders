@@ -24,7 +24,7 @@ import { readFile } from 'fs/promises';
 import { existsSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
-import { config as loadEnv } from 'dotenv';
+import { pathToFileURL } from 'url';
 
 // -- Constants ---------------------------------------------------------------
 
@@ -32,22 +32,77 @@ const USER_DIR = join(homedir(), '.follow-builders');
 const CONFIG_PATH = join(USER_DIR, 'config.json');
 const ENV_PATH = join(USER_DIR, '.env');
 
+function parseCliArgs(args) {
+  const parsed = {};
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    if (!arg.startsWith('--')) continue;
+    const key = arg.slice(2);
+    const next = args[index + 1];
+    if (next && !next.startsWith('--')) {
+      parsed[key] = next;
+      index += 1;
+    } else {
+      parsed[key] = true;
+    }
+  }
+  return parsed;
+}
+
+function formatDateForTimezone(date, timeZone = 'UTC') {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+  return formatter.format(date);
+}
+
+function buildDigestSubject(date = new Date(), timeZone = 'UTC') {
+  return `AI Builders Digest \u2014 ${formatDateForTimezone(date, timeZone)}`;
+}
+
+async function readEnvFile(envPath) {
+  if (!existsSync(envPath)) return {};
+
+  const raw = await readFile(envPath, 'utf-8');
+  const env = {};
+  for (const line of raw.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+
+    const idx = trimmed.indexOf('=');
+    if (idx === -1) continue;
+    const key = trimmed.slice(0, idx).trim();
+    let value = trimmed.slice(idx + 1).trim();
+    if (!key) continue;
+
+    // Remove surrounding quotes
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+
+    env[key] = value;
+  }
+  return env;
+}
+
 // -- Read input --------------------------------------------------------------
 
 // The digest text can come from stdin, --message flag, or --file flag
-async function getDigestText() {
-  const args = process.argv.slice(2);
-
+async function getDigestText(parsedArgs) {
   // Check --message flag
-  const msgIdx = args.indexOf('--message');
-  if (msgIdx !== -1 && args[msgIdx + 1]) {
-    return args[msgIdx + 1];
+  if (parsedArgs.message && typeof parsedArgs.message === 'string') {
+    return parsedArgs.message;
   }
 
   // Check --file flag
-  const fileIdx = args.indexOf('--file');
-  if (fileIdx !== -1 && args[fileIdx + 1]) {
-    return await readFile(args[fileIdx + 1], 'utf-8');
+  if (parsedArgs.file && typeof parsedArgs.file === 'string') {
+    return await readFile(parsedArgs.file, 'utf-8');
   }
 
   // Read from stdin
@@ -161,8 +216,54 @@ function sourceLabel(url, fallbackIndex) {
   }
 }
 
+const EMPTY_SECTION_FALLBACKS = {
+  'X / TWITTER': 'No qualifying X posts in the past 24 hours.',
+  'OFFICIAL BLOGS': 'No qualifying official blog posts in the past 24 hours.',
+  'PODCASTS': 'No qualifying podcast episodes in the past 24 hours.'
+};
+
+function ensureSectionFallbacks(text) {
+  const lines = text.replace(/\r\n/g, '\n').split('\n');
+  const sectionHeaders = Object.keys(EMPTY_SECTION_FALLBACKS);
+  const headerIndexes = sectionHeaders
+    .map((label) => ({
+      label,
+      index: lines.findIndex((line) => line.trim() === `**${label}**`)
+    }))
+    .filter((entry) => entry.index !== -1)
+    .sort((left, right) => left.index - right.index);
+
+  for (let headerPos = headerIndexes.length - 1; headerPos >= 0; headerPos -= 1) {
+    const { label, index } = headerIndexes[headerPos];
+    const nextHeaderIndex = headerPos + 1 < headerIndexes.length
+      ? headerIndexes[headerPos + 1].index
+      : lines.length;
+
+    let dividerIndex = -1;
+    for (let lineIndex = index + 1; lineIndex < nextHeaderIndex; lineIndex += 1) {
+      if (lines[lineIndex].trim() === '--------') {
+        dividerIndex = lineIndex;
+        break;
+      }
+    }
+    if (dividerIndex === -1) continue;
+
+    const bodyLines = lines.slice(dividerIndex + 1, nextHeaderIndex);
+    const hasMeaningfulContent = bodyLines.some((line) => {
+      const trimmed = line.trim();
+      return trimmed !== '' && trimmed !== '--------';
+    });
+
+    if (!hasMeaningfulContent) {
+      lines.splice(dividerIndex + 1, 0, '', EMPTY_SECTION_FALLBACKS[label], '');
+    }
+  }
+
+  return lines.join('\n');
+}
+
 function digestTextToHtml(text) {
-  const normalized = text
+  const normalized = ensureSectionFallbacks(text)
     .replace(/\r\n/g, '\n')
     .replace(/\n-{8,}\n/g, '\n\n--------\n\n');
   const blocks = normalized.trim().split(/\n{2,}/);
@@ -215,22 +316,22 @@ function digestTextToHtml(text) {
   <meta charset="utf-8">
   <style>
     body { margin: 0; padding: 0; background: #242424; color: #e8e8e8; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; line-height: 1.45; }
-    .container { max-width: 1080px; margin: 0 auto; padding: 18px 30px 28px; }
-    h1 { margin: 0 0 36px; font-size: 22px; line-height: 1.25; font-weight: 500; color: #eeeeee; }
-    h2 { margin: 24px 0 16px; font-size: 28px; line-height: 1.25; color: #eeeeee; font-weight: 800; }
-    .section-title { text-align: center; font-size: 30px; letter-spacing: 0; text-transform: uppercase; }
+    .container { max-width: 920px; margin: 0 auto; padding: 16px 26px 24px; }
+    h1 { margin: 0 0 28px; font-size: 19px; line-height: 1.25; font-weight: 500; color: #eeeeee; }
+    h2 { margin: 20px 0 12px; font-size: 23px; line-height: 1.25; color: #eeeeee; font-weight: 800; }
+    .section-title { text-align: center; font-size: 25px; letter-spacing: 0; text-transform: uppercase; }
     .item-title { text-align: left; }
-    p { margin: 0 0 20px; font-size: 20px; color: #e6e6e6; }
+    p { margin: 0 0 16px; font-size: 17px; color: #e6e6e6; }
     a { color: #7da2ff; text-decoration: none; }
-    .sources { margin-top: 2px; margin-bottom: 34px; color: #7da2ff; font-size: 18px; }
-    hr { border: 0; border-top: 1px solid #9a9a9a; margin: 28px 0; }
+    .sources { margin-top: 2px; margin-bottom: 24px; color: #7da2ff; font-size: 15px; }
+    hr { border: 0; border-top: 1px solid #9a9a9a; margin: 22px 0; }
     @media (max-width: 640px) {
-      .container { padding: 16px 18px 24px; }
-      h1 { font-size: 19px; margin-bottom: 28px; }
-      h2 { font-size: 23px; }
-      .section-title { font-size: 25px; }
-      p { font-size: 17px; }
-      .sources { font-size: 16px; }
+      .container { padding: 14px 16px 22px; }
+      h1 { font-size: 17px; margin-bottom: 24px; }
+      h2 { font-size: 20px; }
+      .section-title { font-size: 22px; }
+      p { font-size: 15px; }
+      .sources { font-size: 14px; }
     }
   </style>
 </head>
@@ -244,7 +345,7 @@ function digestTextToHtml(text) {
 
 // Sends the digest via Resend's email API.
 // The user provides their own Resend API key and email address.
-async function sendEmail(text, apiKey, toEmail) {
+async function sendEmail(text, apiKey, toEmail, subject = buildDigestSubject()) {
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
@@ -254,9 +355,7 @@ async function sendEmail(text, apiKey, toEmail) {
     body: JSON.stringify({
       from: 'AI Builders Digest <digest@resend.dev>',
       to: [toEmail],
-      subject: `AI Builders Digest — ${new Date().toLocaleDateString('en-US', {
-        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-      })}`,
+      subject,
       text: text,
       html: digestTextToHtml(text)
     })
@@ -268,19 +367,45 @@ async function sendEmail(text, apiKey, toEmail) {
   }
 }
 
+export { buildDigestSubject, digestTextToHtml, ensureSectionFallbacks, sendEmail };
+
 // -- Main --------------------------------------------------------------------
 
 async function main() {
   // Load env and config
-  loadEnv({ path: ENV_PATH });
+  const fileEnv = await readEnvFile(ENV_PATH);
+  const env = { ...fileEnv, ...process.env };
+  const cliArgs = parseCliArgs(process.argv.slice(2));
 
   let config = {};
   if (existsSync(CONFIG_PATH)) {
     config = JSON.parse(await readFile(CONFIG_PATH, 'utf-8'));
   }
 
-  const delivery = config.delivery || { method: 'stdout' };
-  const digestText = await getDigestText();
+  const delivery = {
+    ...(config.delivery || { method: 'stdout' }),
+    method:
+      cliArgs.method ||
+      env.FOLLOW_BUILDERS_DELIVERY_METHOD ||
+      config.delivery?.method ||
+      'stdout',
+    email:
+      cliArgs.email ||
+      env.FOLLOW_BUILDERS_DELIVERY_EMAIL ||
+      config.delivery?.email,
+    chatId:
+      cliArgs['chat-id'] ||
+      env.FOLLOW_BUILDERS_DELIVERY_CHAT_ID ||
+      config.delivery?.chatId
+  };
+  const digestText = ensureSectionFallbacks(await getDigestText(cliArgs));
+  const subject =
+    cliArgs.subject ||
+    env.FOLLOW_BUILDERS_EMAIL_SUBJECT ||
+    buildDigestSubject(
+      new Date(),
+      env.FOLLOW_BUILDERS_TIMEZONE || config.timezone || 'UTC'
+    );
 
   if (!digestText || digestText.trim().length === 0) {
     console.log(JSON.stringify({ status: 'skipped', reason: 'Empty digest text' }));
@@ -290,10 +415,10 @@ async function main() {
   try {
     switch (delivery.method) {
       case 'telegram': {
-        const botToken = process.env.TELEGRAM_BOT_TOKEN;
+        const botToken = env.TELEGRAM_BOT_TOKEN;
         const chatId = delivery.chatId;
-        if (!botToken) throw new Error('TELEGRAM_BOT_TOKEN not found in .env');
-        if (!chatId) throw new Error('delivery.chatId not found in config.json');
+        if (!botToken) throw new Error('TELEGRAM_BOT_TOKEN not found in environment or .env');
+        if (!chatId) throw new Error('delivery.chatId not found in config or overrides');
         await sendTelegram(digestText, botToken, chatId);
         console.log(JSON.stringify({
           status: 'ok',
@@ -304,11 +429,11 @@ async function main() {
       }
 
       case 'email': {
-        const apiKey = process.env.RESEND_API_KEY;
+        const apiKey = env.RESEND_API_KEY;
         const toEmail = delivery.email;
-        if (!apiKey) throw new Error('RESEND_API_KEY not found in .env');
-        if (!toEmail) throw new Error('delivery.email not found in config.json');
-        await sendEmail(digestText, apiKey, toEmail);
+        if (!apiKey) throw new Error('RESEND_API_KEY not found in environment or .env');
+        if (!toEmail) throw new Error('delivery.email not found in config or overrides');
+        await sendEmail(digestText, apiKey, toEmail, subject);
         console.log(JSON.stringify({
           status: 'ok',
           method: 'email',
@@ -333,4 +458,12 @@ async function main() {
   }
 }
 
-main();
+const isDirectRun =
+  typeof process !== 'undefined' &&
+  Array.isArray(process.argv) &&
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (isDirectRun) {
+  main();
+}
